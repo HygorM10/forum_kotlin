@@ -2,6 +2,7 @@ package br.com.hygorm10.forum.service
 
 import br.com.hygorm10.forum.converter.TopicoDtoMapper
 import br.com.hygorm10.forum.converter.TopicoViewMap
+import br.com.hygorm10.forum.exception.NotFoundException
 import br.com.hygorm10.forum.model.Topico
 import br.com.hygorm10.forum.model.dto.AtualizacaoTopicoForm
 import br.com.hygorm10.forum.model.dto.TopicoDto
@@ -13,7 +14,8 @@ import java.util.stream.Collectors
 class TopicoService(
     private var topicos: List<Topico> = ArrayList(),
     private val topicoViewMapper: TopicoViewMap,
-    private val topicoDtoMapper: TopicoDtoMapper
+    private val topicoDtoMapper: TopicoDtoMapper,
+    private val notFoundMessage: String = "Topico não encontrado!"
 ) {
 
     fun listar(): List<TopicoView> {
@@ -26,7 +28,7 @@ class TopicoService(
     fun buscarPorId(id: Long): TopicoView {
         val topico = topicos.stream().filter { t ->
             t.id == id
-        }.findFirst().get()
+        }.findFirst().orElseThrow{NotFoundException(notFoundMessage)}
 
         return topicoViewMapper.map(topico)
     }
@@ -41,7 +43,7 @@ class TopicoService(
     fun atualizar(form: AtualizacaoTopicoForm): TopicoView {
         val topico = topicos.stream().filter { t ->
             t.id == form.id
-        }.findFirst().get()
+        }.findFirst().orElseThrow{NotFoundException(notFoundMessage)}
 
         val topicoAtualizado = Topico(
             id = form.id,
@@ -60,9 +62,10 @@ class TopicoService(
     }
 
     fun deletar(id: Long) {
+
         val topico = topicos.stream().filter { t ->
             t.id == id
-        }.findFirst().get()
+        }.findFirst().orElseThrow{NotFoundException(notFoundMessage)}
 
         topicos = topicos.minus(topico)
     }
